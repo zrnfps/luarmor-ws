@@ -1,147 +1,76 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Kanye Hub</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0a0a0a; display: flex; justify-content: center; padding: 20px; }
-    .hub { font-family: monospace; background: #111; color: #ccc; max-width: 360px; width: 100%; border: 1px solid #333; border-radius: 4px; overflow: hidden; font-size: 13px; }
-    .hub-title { background: #1a1a1a; border-bottom: 1px solid #333; padding: 6px 10px; display: flex; justify-content: space-between; font-size: 12px; color: #aaa; }
-    .row { display: flex; align-items: center; border-bottom: 1px solid #222; min-height: 34px; }
-    .row-label { width: 90px; padding: 6px 10px; color: #888; font-size: 12px; }
-    .row-content { flex: 1; padding: 4px 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .btn { background: #1e1e1e; border: 1px solid #333; padding: 4px 10px; color: #ccc; cursor: pointer; }
-    .btn:hover { background: #2a2a2a; }
-    .status-bar { background: #0a0a0a; border-top: 1px solid #222; padding: 4px 10px; font-size: 11px; color: #555; }
-    .ok { color: #4c4; }
-    .err { color: #c44; }
-  </style>
-</head>
+<body style="background:#111;color:#0f0;font-family:monospace">
 
-<body>
-<div class="hub">
+<h2>KANYE HUB AUTO</h2>
 
-  <div class="hub-title">
-    <span>KANYE HUB</span>
-    <span>v4</span>
-  </div>
+<div id="buttons"></div>
 
-  <!-- Robux -->
-  <div class="row">
-    <div class="row-label">Robux</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('SetRobux_999999')">999k</button>
-    </div>
-  </div>
+<hr>
 
-  <!-- Keybind -->
-  <div class="row">
-    <div class="row-label">Keybind</div>
-    <div class="row-content">
-      <div class="btn">L</div>
-    </div>
-  </div>
-
-  <!-- Global Gift -->
-  <div class="row">
-    <div class="row-label">Global</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('GlobalGift')">Gift</button>
-    </div>
-  </div>
-
-  <!-- Effects -->
-  <div class="row">
-    <div class="row-label">Effects</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('Ragdoll')">Ragdoll</button>
-      <button class="btn" onclick="send('Control')">Control</button>
-      <button class="btn" onclick="send('Jail')">Jail</button>
-      <button class="btn" onclick="send('Jumpscr')">Jumpscr</button>
-      <button class="btn" onclick="send('Balloon')">Balloon</button>
-      <button class="btn" onclick="send('Inverse')">Inverse</button>
-      <button class="btn" onclick="send('Morph')">Morph</button>
-    </div>
-  </div>
-
-  <!-- Fake Vouch -->
-  <div class="row">
-    <div class="row-label">Vouch</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('FakeVouch_WWWW')">WWWW</button>
-      <button class="btn" onclick="send('FakeVouch_vouchhhhh')">vouchhhhh</button>
-      <button class="btn" onclick="send('FakeVouch_omgtyvouch')">omg ty</button>
-      <button class="btn" onclick="send('FakeVouch_tylegitt')">legit</button>
-    </div>
-  </div>
-
-  <!-- LOG -->
-  <div style="padding:8px">
-    <div style="font-size:12px;color:#888;margin-bottom:4px">Logs</div>
-    <div id="log-box" style="
-      background:#0f0f0f;
-      border:1px solid #333;
-      height:180px;
-      overflow-y:auto;
-      font-size:11px;
-      padding:6px;
-      color:#7dff7d;
-    "></div>
-  </div>
-
-  <div class="status-bar" id="status">Conectando...</div>
-
-</div>
+<div id="log"></div>
 
 <script>
-const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-let ws;
+let ws
+const created = new Set()
 
-const statusEl = document.getElementById('status');
-const logBox = document.getElementById('log-box');
-
-function log(text) {
-  const el = document.createElement('div');
-  el.textContent = text;
-  logBox.appendChild(el);
-  logBox.scrollTop = logBox.scrollHeight;
+function log(msg){
+  document.getElementById("log").innerHTML += "<br>"+msg
 }
 
-function connect() {
-  ws = new WebSocket(proto + '//' + location.host + '/ws');
+function createButton(name){
+  if (!name || created.has(name)) return
+  created.add(name)
 
-  ws.onopen = () => {
-    statusEl.textContent = '✅ Conectado';
-    statusEl.className = 'status-bar ok';
-    log('🟢 Conectado');
-  };
+  const btn = document.createElement("button")
+  btn.innerText = name
 
-  ws.onmessage = (e) => {
-    log("📩 " + e.data);
-  };
-
-  ws.onclose = () => {
-    statusEl.textContent = '❌ Reconectando...';
-    statusEl.className = 'status-bar err';
-    setTimeout(connect, 3000);
-  };
-}
-
-function send(cmd) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    log("❌ Sem conexão");
-    return;
+  btn.onclick = () => {
+    ws.send(JSON.stringify({
+      type: "button",
+      name: name
+    }))
+    log("📤 " + name)
   }
 
-  ws.send(JSON.stringify({
-    type: "button",
-    name: cmd
-  }));
-
-  log("📤 " + cmd);
+  document.getElementById("buttons").appendChild(btn)
 }
 
-connect();
+function connect(){
+  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws")
+
+  ws.onopen = () => log("🟢 conectado")
+
+  ws.onmessage = async (e) => {
+    let text
+
+    if (e.data instanceof Blob) {
+      text = await e.data.text()
+    } else {
+      text = e.data
+    }
+
+    log("📩 " + text)
+
+    try {
+      const data = JSON.parse(text)
+
+      if (data.type === "button") {
+        createButton(data.name)
+      }
+
+      if (data.type === "remote") {
+        createButton(data.remote)
+      }
+
+    } catch {}
+  }
+
+  ws.onclose = () => log("🔴 desconectado")
+  ws.onerror = () => log("⚠️ erro")
+}
+
+connect()
 </script>
 
 </body>
