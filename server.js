@@ -1,1 +1,38 @@
-const express=require('express'),WebSocket=require('ws'),http=require('http'),app=express(),server=http.createServer(app),wss=new WebSocket.Server({server,path:'/ws'});app.use(express.static('public'));wss.on('connection',ws=>{console.log('🔗 Volt');ws.on('message',d=>{try{const m=JSON.parse(d);console.log(`${m.type}:${m.button}`);wss.clients.forEach(c=>{if(c.readyState===WebSocket.OPEN)c.send(JSON.stringify(m))})}catch(e){console.log(e)}})});server.listen(process.env.PORT||8080);
+const express = require('express')
+const WebSocket = require('ws')
+const http = require('http')
+
+const app = express()
+const server = http.createServer(app)
+const wss = new WebSocket.Server({ server, path: '/ws' })
+
+app.use(express.static('public'))
+
+wss.on('connection', (ws) => {
+    console.log('🔗 Volt conectado')
+    
+    ws.on('message', (data) => {
+        try {
+            const msg = JSON.parse(data)
+            console.log(`${msg.type}: ${msg.button || 'ping'}`)
+            
+            // Envia para todos browsers
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(msg))
+                }
+            })
+        } catch (e) {
+            console.log('Erro:', e)
+        }
+    })
+    
+    ws.on('close', () => {
+        console.log('🔌 Volt desconectado')
+    })
+})
+
+const port = process.env.PORT || 8080
+server.listen(port, () => {
+    console.log('🚀 Luarmor WS na porta', port)
+})
