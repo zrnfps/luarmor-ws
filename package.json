@@ -1,8 +1,7 @@
 {
   "name": "luarmor-ws",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "main": "server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
