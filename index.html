@@ -1,76 +1,211 @@
 <!DOCTYPE html>
 <html>
-<body style="background:#111;color:#0f0;font-family:monospace">
+<head>
+<title>Kanye Hub</title>
 
-<h2>KANYE HUB AUTO</h2>
+<style>
+* { box-sizing: border-box; }
 
-<div id="buttons"></div>
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #0a0a0a, #111);
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  color: #ccc;
+}
 
-<hr>
+.panel {
+  width: 360px;
+  background: #121212;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
 
-<div id="log"></div>
+.header {
+  padding: 10px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 14px;
+  color: #888;
+  display: flex;
+  justify-content: space-between;
+}
+
+.section {
+  padding: 10px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.section-title {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+button {
+  flex: 1;
+  min-width: 80px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1e1e1e;
+  color: #ccc;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+button:hover {
+  background: #2a2a2a;
+  border-color: #555;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hist-btn {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1e1e1e;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.hist-btn.on {
+  border-color: #4cff7a;
+  color: #4cff7a;
+  box-shadow: 0 0 6px rgba(76,255,122,0.3);
+}
+
+.hist-btn.off {
+  border-color: #ff4c4c;
+  color: #ff4c4c;
+  opacity: 0.7;
+}
+
+.status {
+  padding: 6px;
+  font-size: 11px;
+  text-align: center;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+  <div class="header">
+    <span>KANYE HUB</span>
+    <span id="status">Conectando...</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">EFFECTS</div>
+    <div class="buttons">
+      <button onclick="send('Ragdoll')">Ragdoll</button>
+      <button onclick="send('Control')">Control</button>
+      <button onclick="send('Jail')">Jail</button>
+      <button onclick="send('Balloon')">Balloon</button>
+      <button onclick="send('Morph')">Morph</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">HISTORY (SYNC REAL TIME)</div>
+    <div class="history" id="history"></div>
+  </div>
+
+  <div class="status">Sincronizado com o jogo</div>
+
+</div>
 
 <script>
-let ws
-const created = new Set()
+let ws;
+const historyBox = document.getElementById('history');
+const statusEl = document.getElementById('status');
 
-function log(msg){
-  document.getElementById("log").innerHTML += "<br>"+msg
-}
-
-function createButton(name){
-  if (!name || created.has(name)) return
-  created.add(name)
-
-  const btn = document.createElement("button")
-  btn.innerText = name
-
-  btn.onclick = () => {
-    ws.send(JSON.stringify({
-      type: "button",
-      name: name
-    }))
-    log("📤 " + name)
-  }
-
-  document.getElementById("buttons").appendChild(btn)
-}
+const states = JSON.parse(localStorage.getItem("states") || "{}");
 
 function connect(){
-  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws")
+  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
 
-  ws.onopen = () => log("🟢 conectado")
+  ws.onopen = ()=>{
+    statusEl.textContent = "ONLINE";
+    statusEl.style.color = "#4cff7a";
+  };
 
-  ws.onmessage = async (e) => {
-    let text
+  ws.onclose = ()=>{
+    statusEl.textContent = "RECONNECT...";
+    statusEl.style.color = "#ff4c4c";
+    setTimeout(connect, 3000);
+  };
 
-    if (e.data instanceof Blob) {
-      text = await e.data.text()
-    } else {
-      text = e.data
-    }
+  ws.onmessage = (e)=>{
+    try{
+      const d = JSON.parse(e.data);
 
-    log("📩 " + text)
-
-    try {
-      const data = JSON.parse(text)
-
-      if (data.type === "button") {
-        createButton(data.name)
+      if(d.button){
+        states[d.button] = d.state ?? true;
+        save();
+        update(d.button);
       }
-
-      if (data.type === "remote") {
-        createButton(data.remote)
-      }
-
-    } catch {}
-  }
-
-  ws.onclose = () => log("🔴 desconectado")
-  ws.onerror = () => log("⚠️ erro")
+    }catch{}
+  };
 }
 
-connect()
+function send(name){
+  if(ws.readyState === 1){
+    ws.send(JSON.stringify({button:name}));
+  }
+}
+
+function update(name){
+  let btn = document.getElementById(name);
+
+  if(!btn){
+    btn = document.createElement("div");
+    btn.id = name;
+    btn.className = "hist-btn";
+    btn.onclick = ()=>send(name);
+    historyBox.appendChild(btn);
+  }
+
+  const state = states[name];
+
+  btn.textContent = name + (state ? " ON" : " OFF");
+  btn.classList.remove("on","off");
+  btn.classList.add(state ? "on" : "off");
+}
+
+function save(){
+  localStorage.setItem("states", JSON.stringify(states));
+}
+
+for(let k in states){
+  update(k);
+}
+
+connect();
 </script>
 
 </body>
