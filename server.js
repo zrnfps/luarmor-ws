@@ -13,9 +13,8 @@ wss.on('connection', ws => {
     console.log('🔗 Cliente conectado')
 
     ws.on('message', msg => {
-        console.log('📩 recebido:', msg.toString())
+        console.log('📩', msg.toString())
 
-        // 🔥 broadcast pra todos
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(msg.toString())
@@ -24,6 +23,8 @@ wss.on('connection', ws => {
     })
 })
 
-server.listen(8080, () => {
-    console.log('🚀 servidor rodando')
+const PORT = process.env.PORT || 8080
+
+server.listen(PORT, () => {
+    console.log('🚀 rodando na porta', PORT)
 })
