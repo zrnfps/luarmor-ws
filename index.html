@@ -1,173 +1,77 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Kanye Hub</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0a0a0a; display: flex; justify-content: center; padding: 20px; }
-    .hub { font-family: 'Courier New', monospace; background: #111; color: #ccc; max-width: 340px; width: 100%; border: 1px solid #333; border-radius: 4px; overflow: hidden; font-size: 13px; }
-    .hub-title { background: #1a1a1a; border-bottom: 1px solid #333; padding: 6px 10px; display: flex; justify-content: space-between; font-size: 12px; color: #aaa; }
-    .row { display: flex; align-items: center; border-bottom: 1px solid #222; min-height: 34px; }
-    .row-label { width: 90px; min-width: 90px; padding: 6px 10px; color: #888; font-size: 12px; }
-    .row-content { flex: 1; padding: 4px 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-    .value-box { background: #1e1e1e; border: 1px solid #333; padding: 4px 12px; border-radius: 2px; color: #ccc; font-size: 12px; text-align: center; min-width: 80px; }
-    .robux-input {
-      background: #1e1e1e; border: 1px solid #444; border-radius: 2px;
-      color: #7dff7d; font-family: 'Courier New', monospace; font-size: 13px;
-      padding: 4px 10px; text-align: center; width: 130px; outline: none;
-      font-weight: bold; transition: border-color 0.15s;
-    }
-    .robux-input:focus { border-color: #7dff7d; }
-    .robux-badge { font-size: 10px; color: #555; margin-left: 4px; align-self: center; }
-    .btn { background: #1e1e1e; border: 1px solid #333; padding: 4px 10px; border-radius: 2px; color: #ccc; font-family: 'Courier New', monospace; font-size: 12px; cursor: pointer; transition: background 0.1s; white-space: nowrap; }
-    .btn:hover { background: #2a2a2a; border-color: #555; }
-    .btn:active { background: #333; color: #fff; }
-    .msg-input { background: #1e1e1e; border: 1px solid #333; border-radius: 2px; color: #ccc; font-family: 'Courier New', monospace; font-size: 12px; padding: 4px 8px; width: 100%; outline: none; }
-    .msg-input::placeholder { color: #555; }
-    .btn-send { background: #1e1e1e; border: 1px solid #333; border-radius: 2px; color: #ccc; font-family: 'Courier New', monospace; font-size: 12px; padding: 5px 0; width: 100%; cursor: pointer; text-align: center; }
-    .btn-send:hover { background: #2a2a2a; }
-    .status-bar { background: #0a0a0a; border-top: 1px solid #222; padding: 4px 10px; font-size: 11px; color: #555; }
-    .status-bar.ok { color: #4c4; }
-    .status-bar.err { color: #c44; }
-  </style>
-</head>
-<body>
-<div class="hub">
-  <div class="hub-title">
-    <span>KANYE HUB FREE ROBUX PANEL&#128578;</span>
-    <span>v</span>
-  </div>
+<body style="background:#111;color:#0f0;font-family:monospace">
 
-  <!-- Robux -->
-  <div class="row">
-    <div class="row-label">Robux</div>
-    <div class="row-content">
-      <input class="robux-input" id="robux-val" type="text" value="294,837"
-        title="Clique para editar"
-        onchange="sendRobux(this.value)"
-        onkeydown="if(event.key==='Enter')this.blur()" />
-      <span class="robux-badge">&#9998; edit</span>
-    </div>
-  </div>
+<h2>KANYE HUB AUTO</h2>
 
-  <!-- Keybind -->
-  <div class="row">
-    <div class="row-label">Keybind</div>
-    <div class="row-content">
-      <div class="value-box">L</div>
-    </div>
-  </div>
+<div id="buttons"></div>
 
-  <!-- Global Gift -->
-  <div class="row">
-    <div class="row-label">Global Gift</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('GlobalGift')">Disabled</button>
-    </div>
-  </div>
+<hr>
 
-  <!-- Effects -->
-  <div class="row" style="align-items:flex-start;padding:4px 0">
-    <div class="row-label" style="padding-top:8px">Effects</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('Ragdoll')">Ragdoll [R]</button>
-      <button class="btn" onclick="send('Control')">Control [C]</button>
-      <button class="btn" onclick="send('Jail')">Jail [J]</button>
-      <button class="btn" onclick="send('Jumpscr')">Jumpscr [U]</button>
-      <button class="btn" onclick="send('Balloon')">Balloon [B]</button>
-      <button class="btn" onclick="send('Inverse')">Inverse [I]</button>
-      <button class="btn" onclick="send('Morph')">Morph [M]</button>
-    </div>
-  </div>
-
-  <!-- Fake Vouch -->
-  <div class="row" style="align-items:flex-start;padding:4px 0">
-    <div class="row-label" style="padding-top:8px">Fake Vouch</div>
-    <div class="row-content">
-      <button class="btn" onclick="send('FakeVouch_WWWW')">WWWW</button>
-      <button class="btn" onclick="send('FakeVouch_vouchhhhh')">vouchhhhh</button>
-      <button class="btn" onclick="send('FakeVouch_omgtyvouch')">omg ty vouch</button>
-      <button class="btn" onclick="send('FakeVouch_tylegitt')">ty legitt</button>
-    </div>
-  </div>
-
-  <!-- Message -->
-  <div class="row" style="flex-direction:column;align-items:stretch;padding:6px 10px;gap:4px">
-    <div style="color:#888;font-size:12px;margin-bottom:2px">Message</div>
-    <input class="msg-input" id="msg-input" type="text" placeholder="custom message..."
-      onkeydown="if(event.key==='Enter')sendMsg()" />
-    <button class="btn-send" onclick="sendMsg()">send</button>
-  </div>
-
-  <div class="status-bar" id="status">Aguardando conexao...</div>
-</div>
+<div id="log"></div>
 
 <script>
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  let ws;
-  const statusEl = document.getElementById('status');
-  const robuxEl  = document.getElementById('robux-val');
+let ws
+const created = new Set()
 
-  function connect() {
-    ws = new WebSocket(proto + '//' + location.host + '/ws');
+function log(msg){
+  document.getElementById("log").innerHTML += "<br>"+msg
+}
 
-    ws.onopen = () => {
-      statusEl.textContent = 'Conectado ao executor';
-      statusEl.className = 'status-bar ok';
-    };
+function createButton(name){
+  if (!name || created.has(name)) return
+  created.add(name)
 
-    ws.onclose = () => {
-      statusEl.textContent = 'Desconectado. Reconectando...';
-      statusEl.className = 'status-bar err';
-      setTimeout(connect, 3000);
-    };
+  const btn = document.createElement("button")
+  btn.innerText = name
 
-    ws.onerror = () => {
-      statusEl.textContent = 'Erro na conexao WebSocket';
-      statusEl.className = 'status-bar err';
-    };
-
-    ws.onmessage = (e) => {
-      try {
-        const d = JSON.parse(e.data);
-        if (d.type === 'robux') {
-          robuxEl.value = Number(d.value).toLocaleString('en-US');
-          statusEl.textContent = 'Robux atualizado pelo executor';
-          statusEl.className = 'status-bar ok';
-          return;
-        }
-      } catch(_) {}
-      statusEl.textContent = 'Lua: ' + e.data;
-      statusEl.className = 'status-bar ok';
-    };
+  btn.onclick = () => {
+    ws.send(JSON.stringify({
+      type: "button",
+      name: name
+    }))
+    log("📤 " + name)
   }
 
-  function send(btn) {
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      statusEl.textContent = 'Sem conexao!';
-      statusEl.className = 'status-bar err';
-      return;
+  document.getElementById("buttons").appendChild(btn)
+}
+
+function connect(){
+  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws")
+
+  ws.onopen = () => log("🟢 conectado")
+
+  ws.onmessage = async (e) => {
+    let text
+
+    if (e.data instanceof Blob) {
+      text = await e.data.text()
+    } else {
+      text = e.data
     }
-    ws.send(JSON.stringify({ button: btn }));
-    statusEl.textContent = 'Enviado: ' + btn;
-    statusEl.className = 'status-bar ok';
+
+    log("📩 " + text)
+
+    try {
+      const data = JSON.parse(text)
+
+      if (data.type === "button") {
+        createButton(data.name)
+      }
+
+      if (data.type === "remote") {
+        createButton(data.remote)
+      }
+
+    } catch {}
   }
 
-  function sendRobux(val) {
-    const num = parseInt(val.replace(/,/g, ''));
-    if (isNaN(num)) return;
-    robuxEl.value = num.toLocaleString('en-US');
-    send('SetRobux_' + num);
-  }
+  ws.onclose = () => log("🔴 desconectado")
+  ws.onerror = () => log("⚠️ erro")
+}
 
-  function sendMsg() {
-    const msg = document.getElementById('msg-input').value.trim();
-    if (!msg) return;
-    send('Message_' + msg);
-    document.getElementById('msg-input').value = '';
-  }
-
-  connect();
+connect()
 </script>
+
 </body>
 </html>
