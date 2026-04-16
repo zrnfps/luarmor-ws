@@ -15,9 +15,18 @@ wss.on('connection', ws => {
         try {
             const m = JSON.parse(d)
 
-            console.log("📥", m)
+            // 🔥 LOG BONITO
+            if (m.type === "remote") {
+                console.log(`📡 ${m.method} -> ${m.remote}`)
+            }
+            else if (m.type === "button") {
+                console.log(`🖱 ${m.name}`)
+            }
+            else {
+                console.log("📦", m)
+            }
 
-            // broadcast pra todo mundo (site + roblox)
+            // 🔥 broadcast pra todos (site + roblox)
             wss.clients.forEach(c => {
                 if (c.readyState === WebSocket.OPEN) {
                     c.send(JSON.stringify(m))
@@ -30,10 +39,10 @@ wss.on('connection', ws => {
     })
 
     ws.on('close', () => {
-        console.log('❌ Cliente saiu')
+        console.log('❌ Cliente desconectado')
     })
 })
 
 server.listen(process.env.PORT || 8080, () => {
-    console.log('🚀 Rodando')
+    console.log('🚀 Server rodando')
 })
