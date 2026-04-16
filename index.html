@@ -4,110 +4,102 @@
 <title>Kanye Hub</title>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
-  margin: 0;
-  background: #0b0b0b;
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  color: #ddd;
+  margin:0;
+  background:#0b0b0b;
+  font-family:'Segoe UI',sans-serif;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:#ddd;
 }
 
 .panel {
-  width: 380px;
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 8px;
-  overflow: hidden;
+  width:380px;
+  background:#111;
+  border:1px solid #222;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 0 20px rgba(0,0,0,0.6);
 }
 
 /* HEADER */
 .header {
-  background: #151515;
-  padding: 10px;
-  border-bottom: 1px solid #222;
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #888;
+  padding:10px;
+  background:#151515;
+  border-bottom:1px solid #222;
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  color:#888;
 }
 
-/* SECTIONS */
+/* SECTION */
 .section {
-  padding: 10px;
-  border-bottom: 1px solid #1a1a1a;
+  padding:10px;
+  border-bottom:1px solid #1a1a1a;
 }
 
-.section-title {
-  font-size: 10px;
-  color: #555;
-  margin-bottom: 6px;
-  letter-spacing: 1px;
+.title {
+  font-size:11px;
+  color:#666;
+  margin-bottom:6px;
 }
 
-/* BUTTON GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-}
-
-/* BUTTON STYLE */
+/* BUTTON */
 .btn {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  padding: 7px;
-  font-size: 12px;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.12s;
+  background:#1a1a1a;
+  border:1px solid #333;
+  padding:6px;
+  text-align:center;
+  cursor:pointer;
+  border-radius:5px;
+  transition:0.15s;
 }
 
 .btn:hover {
-  background: #242424;
-  border-color: #444;
+  background:#2a2a2a;
 }
 
-.btn:active {
-  transform: scale(0.95);
+/* INPUT */
+input {
+  width:100%;
+  padding:6px;
+  margin-bottom:6px;
+  background:#1a1a1a;
+  border:1px solid #333;
+  color:white;
+  border-radius:5px;
 }
 
-/* HISTORY */
-.history {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+/* PLAYERS */
+.players {
+  max-height:140px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
 }
 
-.hist {
-  padding: 5px 7px;
-  font-size: 11px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  background: #1a1a1a;
-  cursor: pointer;
+.player {
+  padding:6px;
+  border-radius:5px;
+  border:1px solid #333;
+  background:#141414;
+  cursor:pointer;
+  font-size:12px;
+  transition:0.1s;
 }
 
-.hist.on {
-  color: #4cff7a;
-  border-color: #4cff7a;
+.player:hover {
+  background:#2a2a2a;
 }
 
-.hist.off {
-  color: #ff4c4c;
-  border-color: #ff4c4c;
-}
-
-/* STATUS */
-.status {
-  text-align: center;
-  font-size: 11px;
-  padding: 6px;
-  color: #555;
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:5px;
 }
 </style>
 </head>
@@ -121,37 +113,46 @@ body {
     <span id="status">...</span>
   </div>
 
-  <!-- EFFECTS -->
+  <!-- PLAYERS -->
   <div class="section">
-    <div class="section-title">EFFECTS</div>
+    <div class="title">PLAYERS</div>
+
+    <div id="players" class="players"></div>
+
+    <div class="btn" onclick="refreshPlayers()">Refresh Players</div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="section">
+    <div class="title">CHAT BUBBLE</div>
+
+    <input id="playerName" placeholder="Player name">
+    <input id="message" placeholder="Message">
+
+    <div class="btn" onclick="sendChat()">Send</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="section">
+    <div class="title">ACTIONS</div>
 
     <div class="grid">
-      <div class="btn" onclick="send('Ragdoll')">Ragdoll</div>
-      <div class="btn" onclick="send('Control')">Control</div>
-      <div class="btn" onclick="send('Jail')">Jail</div>
-      <div class="btn" onclick="send('Jumpscr')">Jumpscr</div>
-      <div class="btn" onclick="send('Balloon')">Balloon</div>
-      <div class="btn" onclick="send('Inverse')">Inverse</div>
-      <div class="btn" onclick="send('Morph')">Morph</div>
+      <div class="btn" onclick="sendBtn('Ragdoll')">Ragdoll</div>
+      <div class="btn" onclick="sendBtn('Control')">Control</div>
+      <div class="btn" onclick="sendBtn('Jail')">Jail</div>
+      <div class="btn" onclick="sendBtn('Jumpscr')">Jumpscr</div>
+      <div class="btn" onclick="sendBtn('Balloon')">Balloon</div>
+      <div class="btn" onclick="sendBtn('Inverse')">Inverse</div>
+      <div class="btn" onclick="sendBtn('Morph')">Morph</div>
     </div>
   </div>
-
-  <!-- HISTORY -->
-  <div class="section">
-    <div class="section-title">LIVE SYNC</div>
-    <div id="history" class="history"></div>
-  </div>
-
-  <div class="status">Real-time synced</div>
 
 </div>
 
 <script>
 let ws;
-const historyBox = document.getElementById('history');
-const statusEl = document.getElementById('status');
-
-const states = JSON.parse(localStorage.getItem("states") || "{}");
+const playersBox = document.getElementById("players");
+const statusEl = document.getElementById("status");
 
 function connect(){
   ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
@@ -169,47 +170,60 @@ function connect(){
 
   ws.onmessage = (e)=>{
     try{
-      const d = JSON.parse(e.data);
+      const data = JSON.parse(e.data);
 
-      if(d.button){
-        states[d.button] = d.state ?? true;
-        save();
-        update(d.button);
+      if(data.type === "players"){
+        updatePlayers(data.list);
       }
+
     }catch{}
   };
 }
 
-function send(name){
+function updatePlayers(list){
+  playersBox.innerHTML = "";
+
+  list.forEach(name=>{
+    const el = document.createElement("div");
+    el.className = "player";
+    el.textContent = name;
+
+    el.onclick = ()=>{
+      document.getElementById("playerName").value = name;
+
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(name).catch(()=>{});
+      }
+    };
+
+    playersBox.appendChild(el);
+  });
+}
+
+function sendBtn(name){
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({button:name}));
   }
 }
 
-function update(name){
-  let el = document.getElementById(name);
+function sendChat(){
+  const name = document.getElementById("playerName").value;
+  const msg = document.getElementById("message").value;
 
-  if(!el){
-    el = document.createElement("div");
-    el.id = name;
-    el.className = "hist";
-    el.onclick = ()=>send(name);
-    historyBox.appendChild(el);
+  if(ws && ws.readyState === 1){
+    ws.send(JSON.stringify({
+      type:"chat",
+      player:name,
+      message:msg
+    }));
   }
-
-  const state = states[name];
-
-  el.textContent = name;
-  el.classList.remove("on","off");
-  el.classList.add(state ? "on" : "off");
 }
 
-function save(){
-  localStorage.setItem("states", JSON.stringify(states));
-}
-
-for(let k in states){
-  update(k);
+/* 🔥 REFRESH MANUAL */
+function refreshPlayers(){
+  if(ws && ws.readyState === 1){
+    ws.send(JSON.stringify({type:"refresh"}));
+  }
 }
 
 connect();
