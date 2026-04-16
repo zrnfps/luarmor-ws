@@ -20,10 +20,9 @@ body {
   border:1px solid #222;
   border-radius:10px;
   overflow:hidden;
-  box-shadow:0 0 20px rgba(0,0,0,0.6);
+  box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
 
-/* HEADER */
 .header {
   padding:10px;
   background:#151515;
@@ -34,7 +33,6 @@ body {
   color:#888;
 }
 
-/* SECTION */
 .section {
   padding:10px;
   border-bottom:1px solid #1a1a1a;
@@ -46,7 +44,16 @@ body {
   margin-bottom:6px;
 }
 
-/* BUTTON */
+input {
+  width:100%;
+  padding:6px;
+  margin-bottom:6px;
+  background:#1a1a1a;
+  border:1px solid #333;
+  color:white;
+  border-radius:5px;
+}
+
 .btn {
   background:#1a1a1a;
   border:1px solid #333;
@@ -61,18 +68,12 @@ body {
   background:#2a2a2a;
 }
 
-/* INPUT */
-input {
-  width:100%;
-  padding:6px;
-  margin-bottom:6px;
-  background:#1a1a1a;
-  border:1px solid #333;
-  color:white;
-  border-radius:5px;
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:5px;
 }
 
-/* PLAYERS */
 .players {
   max-height:140px;
   overflow-y:auto;
@@ -88,18 +89,10 @@ input {
   background:#141414;
   cursor:pointer;
   font-size:12px;
-  transition:0.1s;
 }
 
 .player:hover {
   background:#2a2a2a;
-}
-
-/* GRID */
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:5px;
 }
 </style>
 </head>
@@ -119,15 +112,15 @@ input {
 
     <div id="players" class="players"></div>
 
-    <div class="btn" onclick="refreshPlayers()">Refresh Players</div>
+    <div class="btn" onclick="refresh()">Refresh Players</div>
   </div>
 
   <!-- CHAT -->
   <div class="section">
     <div class="title">CHAT BUBBLE</div>
 
-    <input id="playerName" placeholder="Player name">
-    <input id="message" placeholder="Message">
+    <input id="name" placeholder="Player name">
+    <input id="msg" placeholder="Message">
 
     <div class="btn" onclick="sendChat()">Send</div>
   </div>
@@ -137,13 +130,13 @@ input {
     <div class="title">ACTIONS</div>
 
     <div class="grid">
-      <div class="btn" onclick="sendBtn('Ragdoll')">Ragdoll</div>
-      <div class="btn" onclick="sendBtn('Control')">Control</div>
-      <div class="btn" onclick="sendBtn('Jail')">Jail</div>
-      <div class="btn" onclick="sendBtn('Jumpscr')">Jumpscr</div>
-      <div class="btn" onclick="sendBtn('Balloon')">Balloon</div>
-      <div class="btn" onclick="sendBtn('Inverse')">Inverse</div>
-      <div class="btn" onclick="sendBtn('Morph')">Morph</div>
+      <div class="btn" onclick="send('Ragdoll')">Ragdoll</div>
+      <div class="btn" onclick="send('Control')">Control</div>
+      <div class="btn" onclick="send('Jail')">Jail</div>
+      <div class="btn" onclick="send('Jumpscr')">Jumpscr</div>
+      <div class="btn" onclick="send('Balloon')">Balloon</div>
+      <div class="btn" onclick="send('Inverse')">Inverse</div>
+      <div class="btn" onclick="send('Morph')">Morph</div>
     </div>
   </div>
 
@@ -173,54 +166,47 @@ function connect(){
       const data = JSON.parse(e.data);
 
       if(data.type === "players"){
-        updatePlayers(data.list);
+        renderPlayers(data.list);
       }
 
     }catch{}
   };
 }
 
-function updatePlayers(list){
+function renderPlayers(list){
   playersBox.innerHTML = "";
 
-  list.forEach(name=>{
+  list.forEach(p=>{
     const el = document.createElement("div");
     el.className = "player";
-    el.textContent = name;
+    el.textContent = p;
 
     el.onclick = ()=>{
-      document.getElementById("playerName").value = name;
-
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(name).catch(()=>{});
-      }
+      document.getElementById("name").value = p;
+      navigator.clipboard?.writeText(p).catch(()=>{});
     };
 
     playersBox.appendChild(el);
   });
 }
 
-function sendBtn(name){
+function send(name){
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({button:name}));
   }
 }
 
 function sendChat(){
-  const name = document.getElementById("playerName").value;
-  const msg = document.getElementById("message").value;
-
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({
       type:"chat",
-      player:name,
-      message:msg
+      player:document.getElementById("name").value,
+      message:document.getElementById("msg").value
     }));
   }
 }
 
-/* 🔥 REFRESH MANUAL */
-function refreshPlayers(){
+function refresh(){
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({type:"refresh"}));
   }
