@@ -1,4 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head><title>Luarmor Control</title>
-<style>body{font-family:monospace;background:#000;color:#0f0;height:100vh;padding:20px}#log{height:40vh;overflow:auto;margin-bottom:20px;padding:15px;background:#111;border-radius:5px}#log div{padding:
+<head><title>Luarmor</title>
+<style>body{font-family:monospace;background:#000;color:#0f0;height:100vh;padding:20px}#log{height:40vh;overflow:auto;margin-bottom:20px;padding:15px;background:#111;border-radius:5px}#log div{padding:8px;border-left:3px solid #0f0;margin:2px}#buttons{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}#buttons button{padding:12px;background:#0f0;color:#000;border:none;border-radius:5px;cursor:pointer;font-family:monospace;font-weight:bold}#buttons button:hover{background:#0cc}</style>
+</head>
+<body>
+<div id="log">🔥 Carregando Luarmor...</div>
+<div id="buttons"></div>
+<script>
+const ws=new WebSocket('wss://'+location.host+'/ws'),log=document.getElementById('log'),btns=document.getElementById('buttons');ws.onmessage=e=>{const d=JSON.parse(e.data);if(d.type=="BUTTONS"){btns.innerHTML='';d.list.forEach(b=>{const btn=document.createElement('button');btn.textContent=b;btn.onclick=()=>ws.send(JSON.stringify({type:'CMD',cmd:b}));btns.appendChild(btn)})}else{const div=document.createElement('div');div.textContent=`[${new Date().toLocaleTimeString()}] ${d.button||e.data}`;log.appendChild(div);log.scrollTop=log.scrollHeight}};ws.onopen=()=>log.innerHTML+='<div>✅ Conectado Luarmor</div>'</script>
+</body>
+</html>
