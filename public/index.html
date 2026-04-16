@@ -22,27 +22,66 @@
 <div class="hub">
 
   <div class="hub-title">
-    <span>KANYE HUB WS DEBUG</span>
-    <span>v3</span>
+    <span>KANYE HUB</span>
+    <span>v4</span>
   </div>
 
-  <!-- BOTÕES TESTE -->
+  <!-- Robux -->
   <div class="row">
-    <div class="row-label">Test</div>
+    <div class="row-label">Robux</div>
+    <div class="row-content">
+      <button class="btn" onclick="send('SetRobux_999999')">999k</button>
+    </div>
+  </div>
+
+  <!-- Keybind -->
+  <div class="row">
+    <div class="row-label">Keybind</div>
+    <div class="row-content">
+      <div class="btn">L</div>
+    </div>
+  </div>
+
+  <!-- Global Gift -->
+  <div class="row">
+    <div class="row-label">Global</div>
+    <div class="row-content">
+      <button class="btn" onclick="send('GlobalGift')">Gift</button>
+    </div>
+  </div>
+
+  <!-- Effects -->
+  <div class="row">
+    <div class="row-label">Effects</div>
     <div class="row-content">
       <button class="btn" onclick="send('Ragdoll')">Ragdoll</button>
       <button class="btn" onclick="send('Control')">Control</button>
       <button class="btn" onclick="send('Jail')">Jail</button>
+      <button class="btn" onclick="send('Jumpscr')">Jumpscr</button>
+      <button class="btn" onclick="send('Balloon')">Balloon</button>
+      <button class="btn" onclick="send('Inverse')">Inverse</button>
+      <button class="btn" onclick="send('Morph')">Morph</button>
+    </div>
+  </div>
+
+  <!-- Fake Vouch -->
+  <div class="row">
+    <div class="row-label">Vouch</div>
+    <div class="row-content">
+      <button class="btn" onclick="send('FakeVouch_WWWW')">WWWW</button>
+      <button class="btn" onclick="send('FakeVouch_vouchhhhh')">vouchhhhh</button>
+      <button class="btn" onclick="send('FakeVouch_omgtyvouch')">omg ty</button>
+      <button class="btn" onclick="send('FakeVouch_tylegitt')">legit</button>
     </div>
   </div>
 
   <!-- LOG -->
   <div style="padding:8px">
-    <div style="font-size:12px;color:#888;margin-bottom:4px">WebSocket Logs</div>
+    <div style="font-size:12px;color:#888;margin-bottom:4px">Logs</div>
     <div id="log-box" style="
       background:#0f0f0f;
       border:1px solid #333;
-      height:220px;
+      height:180px;
       overflow-y:auto;
       font-size:11px;
       padding:6px;
@@ -68,81 +107,38 @@ function log(text) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// 🔥 REPLAY
-function replay(remote, args) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    log("❌ Sem conexão");
-    return;
-  }
-
-  ws.send(JSON.stringify({
-    type: "remote",
-    remote: remote,
-    args: args
-  }));
-
-  log("♻️ Replay enviado: " + remote);
-}
-
 function connect() {
   ws = new WebSocket(proto + '//' + location.host + '/ws');
 
   ws.onopen = () => {
     statusEl.textContent = '✅ Conectado';
     statusEl.className = 'status-bar ok';
-    log('🟢 Conectado ao servidor');
+    log('🟢 Conectado');
+  };
+
+  ws.onmessage = (e) => {
+    log("📩 " + e.data);
   };
 
   ws.onclose = () => {
     statusEl.textContent = '❌ Reconectando...';
     statusEl.className = 'status-bar err';
-    log('🔴 Desconectado');
     setTimeout(connect, 3000);
-  };
-
-  ws.onerror = () => {
-    log('⚠️ Erro WebSocket');
-  };
-
-  ws.onmessage = (e) => {
-    try {
-      const d = JSON.parse(e.data);
-
-      if (d.type === "remote") {
-        const el = document.createElement('div');
-
-        el.innerHTML = `
-          📡 ${d.remote}
-          <button style="margin-left:6px" onclick='replay(${JSON.stringify(d.remote)}, ${JSON.stringify(d.args)})'>▶</button>
-        `;
-
-        logBox.appendChild(el);
-        logBox.scrollTop = logBox.scrollHeight;
-      }
-
-      else if (d.type === "button") {
-        log("🖱 BTN: " + d.name);
-      }
-
-      else {
-        log("📦 " + JSON.stringify(d));
-      }
-
-    } catch {
-      log("📩 " + e.data);
-    }
   };
 }
 
-// botão manual
 function send(cmd) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     log("❌ Sem conexão");
     return;
   }
 
-  ws.send(JSON.stringify({ button: cmd }));
-  log("📤 Enviado: " + cmd);
+  ws.send(JSON.stringify({
+    type: "button",
+    name: cmd
+  }));
+
+  log("📤 " + cmd);
 }
 
 connect();
