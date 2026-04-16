@@ -17,10 +17,9 @@ wss.on('connection', ws => {
     ws.on('message', msg => {
         console.log(`📩 #${id}:`, msg.toString())
 
-        // manda pra todos (site + roblox)
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(msg.toString())
+                client.send(msg)
             }
         })
     })
