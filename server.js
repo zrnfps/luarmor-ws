@@ -12,30 +12,27 @@ app.use(express.static(__dirname))
 wss.on('connection', ws => {
     ws.type = null
 
-    ws.on('message', msg => {
+    ws.on('message', raw => {
         let data
+        try { data = JSON.parse(raw) } catch { return }
 
-        try {
-            data = JSON.parse(msg)
-        } catch {
-            return
-        }
-
-        // registrar tipo
+        // 🔥 registrar tipo
         if (data.type === "register") {
             ws.type = data.client
+            console.log("📌", ws.type, "registrado")
             return
         }
 
+        // 🔥 ROTEAMENTO CORRETO
         wss.clients.forEach(client => {
             if (client.readyState !== WebSocket.OPEN) return
 
-            // site → game
+            // SITE → GAME
             if (ws.type === "site" && client.type === "game") {
                 client.send(JSON.stringify(data))
             }
 
-            // game → site
+            // GAME → SITE (IMPORTANTE!)
             if (ws.type === "game" && client.type === "site") {
                 client.send(JSON.stringify(data))
             }
@@ -43,5 +40,6 @@ wss.on('connection', ws => {
     })
 })
 
-const PORT = process.env.PORT || 8080
-server.listen(PORT, () => console.log('🚀 server rodando'))
+server.listen(process.env.PORT || 8080, () => {
+    console.log("🚀 server rodando")
+})
