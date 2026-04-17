@@ -13,13 +13,20 @@ wss.on('connection', ws => {
     console.log('🔗 Cliente conectado')
 
     ws.on('message', msg => {
-        console.log('📩', msg.toString())
+        const data = msg.toString()
 
+        console.log('📩 recebido:', data)
+
+        // 🔥 envia pra TODOS MENOS quem mandou
         wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(msg.toString())
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(data)
             }
         })
+    })
+
+    ws.on('close', () => {
+        console.log('❌ Cliente desconectado')
     })
 })
 
