@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Kanye Hub</title>
+<meta charset="UTF-8">
+<title>Kanye Admin Panel</title>
 
 <style>
 body {
   margin:0;
   background:#0b0b0b;
-  font-family:'Segoe UI',sans-serif;
+  font-family:sans-serif;
   display:flex;
   justify-content:center;
   padding:20px;
@@ -15,22 +16,18 @@ body {
 }
 
 .panel {
-  width:400px;
+  width:380px;
   background:#111;
   border:1px solid #222;
   border-radius:10px;
-  overflow:hidden;
-  box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
 
 .header {
   padding:10px;
   background:#151515;
-  border-bottom:1px solid #222;
   display:flex;
   justify-content:space-between;
-  font-size:13px;
-  color:#888;
+  border-bottom:1px solid #222;
 }
 
 .section {
@@ -39,68 +36,44 @@ body {
 }
 
 .title {
-  font-size:11px;
-  color:#666;
-  margin-bottom:6px;
+  font-size:12px;
+  color:#777;
+  margin-bottom:5px;
 }
 
-input {
-  width:100%;
-  padding:7px;
-  margin-bottom:6px;
-  background:#1a1a1a;
+.players {
+  max-height:150px;
+  overflow:auto;
+}
+
+.player {
+  padding:6px;
   border:1px solid #333;
-  color:white;
-  border-radius:6px;
+  margin-bottom:4px;
+  cursor:pointer;
+}
+
+.player:hover {
+  background:#333;
 }
 
 .btn {
   background:#1a1a1a;
   border:1px solid #333;
-  padding:7px;
+  padding:6px;
+  margin-top:5px;
+  cursor:pointer;
   text-align:center;
-  cursor:pointer;
-  border-radius:6px;
-  transition:0.15s;
 }
 
-.btn:hover {
-  background:#2a2a2a;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:6px;
-}
-
-/* PLAYERS */
-.players {
-  max-height:150px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
-}
-
-.player {
-  padding:7px;
-  border-radius:6px;
+input {
+  width:100%;
+  padding:6px;
+  margin-bottom:5px;
+  background:#1a1a1a;
   border:1px solid #333;
-  background:#141414;
-  cursor:pointer;
-  font-size:12px;
-  transition:0.1s;
+  color:white;
 }
-
-.player:hover {
-  background:#2a2a2a;
-  border-color:#555;
-}
-
-/* STATUS */
-.online { color:#4cff7a; }
-.offline { color:#ff4c4c; }
 </style>
 </head>
 
@@ -108,58 +81,56 @@ input {
 
 <div class="panel">
 
-  <div class="header">
-    <span>KANYE ADMIN PANEL</span>
-    <span id="status" class="offline">OFF</span>
-  </div>
+<div class="header">
+  <span>KANYE PANEL</span>
+  <span id="status">OFF</span>
+</div>
 
-  <!-- PLAYERS -->
-  <div class="section">
-    <div class="title">PLAYERS (LIVE)</div>
+<div class="section">
+  <div class="title">PLAYERS</div>
+  <div id="players" class="players"></div>
+  <div class="btn" onclick="refresh()">Refresh</div>
+</div>
 
-    <div id="players" class="players"></div>
+<div class="section">
+  <div class="title">CHAT</div>
+  <input id="name" placeholder="Player">
+  <input id="msg" placeholder="Message">
+  <div class="btn" onclick="sendChat()">Send</div>
+</div>
 
-    <div class="btn" onclick="refresh()">Refresh Players</div>
-  </div>
-
-  <!-- CHAT -->
-  <div class="section">
-    <div class="title">CHAT CONTROL</div>
-
-    <input id="name" placeholder="Player Name">
-    <input id="msg" placeholder="Message">
-
-    <div class="btn" onclick="sendChat()">Send Message</div>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="section">
-    <div class="title">ACTIONS</div>
-
-    <div class="grid">
-      <div class="btn" onclick="send('Ragdoll')">Ragdoll</div>
-      <div class="btn" onclick="send('Control')">Control</div>
-      <div class="btn" onclick="send('Jail')">Jail</div>
-      <div class="btn" onclick="send('Jumpscr')">Jumpscr</div>
-      <div class="btn" onclick="send('Balloon')">Balloon</div>
-      <div class="btn" onclick="send('Inverse')">Inverse</div>
-      <div class="btn" onclick="send('Morph')">Morph</div>
-    </div>
-  </div>
+<div class="section">
+  <div class="title">ACTIONS</div>
+  <div class="btn" onclick="send('Ragdoll')">Ragdoll</div>
+  <div class="btn" onclick="send('Control')">Control</div>
+  <div class="btn" onclick="send('Jail')">Jail</div>
+  <div class="btn" onclick="send('Jumpscr')">Jumpscr</div>
+  <div class="btn" onclick="send('Balloon')">Balloon</div>
+  <div class="btn" onclick="send('Inverse')">Inverse</div>
+  <div class="btn" onclick="send('Morph')">Morph</div>
+</div>
 
 </div>
 
 <script>
 let ws;
+
 const playersBox = document.getElementById("players");
 const statusEl = document.getElementById("status");
 
+// 🔥 CONEXÃO SEGURA
 function connect(){
-  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
+  try{
+    ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
+  }catch(e){
+    console.log("erro conectar", e);
+    return;
+  }
 
   ws.onopen = ()=>{
+    console.log("WS conectado");
+
     statusEl.textContent = "ONLINE";
-    statusEl.className = "online";
 
     ws.send(JSON.stringify({
       type:"register",
@@ -168,24 +139,35 @@ function connect(){
   };
 
   ws.onclose = ()=>{
-    statusEl.textContent = "RECONNECT";
-    statusEl.className = "offline";
-    setTimeout(connect, 2000);
+    console.log("WS fechado");
+    statusEl.textContent = "OFF";
+    setTimeout(connect,2000);
+  };
+
+  ws.onerror = (e)=>{
+    console.log("WS erro", e);
   };
 
   ws.onmessage = (e)=>{
     try{
+      console.log("📩", e.data);
+
       const data = JSON.parse(e.data);
 
       if(data.type === "players"){
         renderPlayers(data.list);
       }
 
-    }catch{}
+    }catch(err){
+      console.log("erro json", err);
+    }
   };
 }
 
+// 🔥 RENDER PLAYERS (SEGURO)
 function renderPlayers(list){
+  if(!Array.isArray(list)) return;
+
   playersBox.innerHTML = "";
 
   list.forEach(p=>{
@@ -196,37 +178,47 @@ function renderPlayers(list){
     el.onclick = ()=>{
       document.getElementById("name").value = p;
 
-      // copia automático
-      navigator.clipboard?.writeText(p).catch(()=>{});
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(p).catch(()=>{});
+      }
     };
 
     playersBox.appendChild(el);
   });
 }
 
+// 🔥 SEND BUTTON
 function send(name){
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({button:name}));
   }
 }
 
+// 🔥 SEND CHAT
 function sendChat(){
-  if(ws && ws.readyState === 1){
-    ws.send(JSON.stringify({
-      type:"chat",
-      player:document.getElementById("name").value,
-      message:document.getElementById("msg").value,
-      id: Date.now() + "_" + Math.random()
-    }));
-  }
+  if(!ws || ws.readyState !== 1) return;
+
+  const player = document.getElementById("name").value;
+  const msg = document.getElementById("msg").value;
+
+  if(!player || !msg) return;
+
+  ws.send(JSON.stringify({
+    type:"chat",
+    player:player,
+    message:msg,
+    id: Date.now()+"_"+Math.random()
+  }));
 }
 
+// 🔥 REFRESH
 function refresh(){
   if(ws && ws.readyState === 1){
     ws.send(JSON.stringify({type:"refresh"}));
   }
 }
 
+// INIT
 connect();
 </script>
 
