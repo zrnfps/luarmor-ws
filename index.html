@@ -15,7 +15,7 @@ body {
 }
 
 .panel {
-  width:380px;
+  width:400px;
   background:#111;
   border:1px solid #222;
   border-radius:10px;
@@ -46,21 +46,21 @@ body {
 
 input {
   width:100%;
-  padding:6px;
+  padding:7px;
   margin-bottom:6px;
   background:#1a1a1a;
   border:1px solid #333;
   color:white;
-  border-radius:5px;
+  border-radius:6px;
 }
 
 .btn {
   background:#1a1a1a;
   border:1px solid #333;
-  padding:6px;
+  padding:7px;
   text-align:center;
   cursor:pointer;
-  border-radius:5px;
+  border-radius:6px;
   transition:0.15s;
 }
 
@@ -71,11 +71,12 @@ input {
 .grid {
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:5px;
+  gap:6px;
 }
 
+/* PLAYERS */
 .players {
-  max-height:140px;
+  max-height:150px;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
@@ -83,17 +84,23 @@ input {
 }
 
 .player {
-  padding:6px;
-  border-radius:5px;
+  padding:7px;
+  border-radius:6px;
   border:1px solid #333;
   background:#141414;
   cursor:pointer;
   font-size:12px;
+  transition:0.1s;
 }
 
 .player:hover {
   background:#2a2a2a;
+  border-color:#555;
 }
+
+/* STATUS */
+.online { color:#4cff7a; }
+.offline { color:#ff4c4c; }
 </style>
 </head>
 
@@ -102,13 +109,13 @@ input {
 <div class="panel">
 
   <div class="header">
-    <span>KANYE HUB</span>
-    <span id="status">...</span>
+    <span>KANYE ADMIN PANEL</span>
+    <span id="status" class="offline">OFF</span>
   </div>
 
   <!-- PLAYERS -->
   <div class="section">
-    <div class="title">PLAYERS</div>
+    <div class="title">PLAYERS (LIVE)</div>
 
     <div id="players" class="players"></div>
 
@@ -117,12 +124,12 @@ input {
 
   <!-- CHAT -->
   <div class="section">
-    <div class="title">CHAT BUBBLE</div>
+    <div class="title">CHAT CONTROL</div>
 
-    <input id="name" placeholder="Player name">
+    <input id="name" placeholder="Player Name">
     <input id="msg" placeholder="Message">
 
-    <div class="btn" onclick="sendChat()">Send</div>
+    <div class="btn" onclick="sendChat()">Send Message</div>
   </div>
 
   <!-- ACTIONS -->
@@ -152,13 +159,18 @@ function connect(){
 
   ws.onopen = ()=>{
     statusEl.textContent = "ONLINE";
-    statusEl.style.color = "#4cff7a";
+    statusEl.className = "online";
+
+    ws.send(JSON.stringify({
+      type:"register",
+      client:"site"
+    }));
   };
 
   ws.onclose = ()=>{
     statusEl.textContent = "RECONNECT";
-    statusEl.style.color = "#ff4c4c";
-    setTimeout(connect, 3000);
+    statusEl.className = "offline";
+    setTimeout(connect, 2000);
   };
 
   ws.onmessage = (e)=>{
@@ -183,6 +195,8 @@ function renderPlayers(list){
 
     el.onclick = ()=>{
       document.getElementById("name").value = p;
+
+      // copia automático
       navigator.clipboard?.writeText(p).catch(()=>{});
     };
 
@@ -201,7 +215,8 @@ function sendChat(){
     ws.send(JSON.stringify({
       type:"chat",
       player:document.getElementById("name").value,
-      message:document.getElementById("msg").value
+      message:document.getElementById("msg").value,
+      id: Date.now() + "_" + Math.random()
     }));
   }
 }
