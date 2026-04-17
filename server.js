@@ -10,28 +10,38 @@ const wss = new WebSocket.Server({ server, path: '/ws' })
 app.use(express.static(__dirname))
 
 wss.on('connection', ws => {
-    console.log('🔗 Cliente conectado')
+    ws.type = null
 
     ws.on('message', msg => {
-        const data = msg.toString()
+        let data
 
-        console.log('📩 recebido:', data)
+        try {
+            data = JSON.parse(msg)
+        } catch {
+            return
+        }
 
-        // 🔥 envia pra TODOS MENOS quem mandou
+        // registrar tipo
+        if (data.type === "register") {
+            ws.type = data.client
+            return
+        }
+
         wss.clients.forEach(client => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(data)
+            if (client.readyState !== WebSocket.OPEN) return
+
+            // site → game
+            if (ws.type === "site" && client.type === "game") {
+                client.send(JSON.stringify(data))
+            }
+
+            // game → site
+            if (ws.type === "game" && client.type === "site") {
+                client.send(JSON.stringify(data))
             }
         })
-    })
-
-    ws.on('close', () => {
-        console.log('❌ Cliente desconectado')
     })
 })
 
 const PORT = process.env.PORT || 8080
-
-server.listen(PORT, () => {
-    console.log('🚀 rodando na porta', PORT)
-})
+server.listen(PORT, () => console.log('🚀 server rodando'))
