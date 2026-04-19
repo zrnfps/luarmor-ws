@@ -1,41 +1,67 @@
-const WebSocket = require('ws')
-const wss = new WebSocket.Server({ port: 8080 })
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
 
-wss.on('connection', (ws) => {
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server, path: "/ws" });
 
-    ws.type = null
+app.use(express.static(__dirname));
 
-    ws.on('message', (msg) => {
-        let data
-        try { data = JSON.parse(msg) } catch { return }
+wss.on("connection", (ws) => {
+    ws.type = null;
 
-        // registrar cliente
+    ws.on("message", (msg) => {
+        let data;
+
+        try {
+            data = JSON.parse(msg);
+        } catch {
+            return; // evita crash
+        }
+
+        // =========================
+        // REGISTRO
+        // =========================
         if (data.type === "register") {
-            ws.type = data.client
-            return
+            ws.type = data.client; // "site" ou "game"
+            return;
         }
 
-        // 🔥 SITE → GAME
+        // =========================
+        // SITE → GAME
+        // =========================
         if (ws.type === "site") {
-            wss.clients.forEach(client => {
-                if (client !== ws &&
+            wss.clients.forEach((client) => {
+                if (
                     client.readyState === WebSocket.OPEN &&
-                    client.type === "game") {
-
-                    client.send(JSON.stringify(data))
+                    client.type === "game"
+                ) {
+                    client.send(JSON.stringify(data));
                 }
-            })
+            });
         }
 
-        // 🔥 GAME → SITE (players)
+        // =========================
+        // GAME → SITE (PLAYERS)
+        // =========================
         if (ws.type === "game" && data.type === "players") {
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN &&
-                    client.type === "site") {
-
-                    client.send(JSON.stringify(data))
+            wss.clients.forEach((client) => {
+                if (
+                    client.readyState === WebSocket.OPEN &&
+                    client.type === "site"
+                ) {
+                    client.send(JSON.stringify(data));
                 }
-            })
+            });
         }
-    })
-})
+    });
+
+    ws.on("close", () => {
+        ws.type = null;
+    });
+});
+
+server.listen(process.env.PORT || 8080, () => {
+    console.log("🚀 Server rodando");
+});
