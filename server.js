@@ -1,67 +1,29 @@
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
+const express = require('express')
+const WebSocket = require('ws')
+const http = require('http')
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server, path: "/ws" });
+const app = express()
+const server = http.createServer(app)
 
-app.use(express.static(__dirname));
+const wss = new WebSocket.Server({ server, path: '/ws' })
 
-wss.on("connection", (ws) => {
-    ws.type = null;
+app.use(express.static(__dirname))
 
-    ws.on("message", (msg) => {
-        let data;
+wss.on('connection', ws => {
+    console.log('🔗 Cliente conectado')
 
-        try {
-            data = JSON.parse(msg);
-        } catch {
-            return; // evita crash
-        }
+    ws.on('message', msg => {
+        console.log('📩 recebido:', msg.toString())
 
-        // =========================
-        // REGISTRO
-        // =========================
-        if (data.type === "register") {
-            ws.type = data.client; // "site" ou "game"
-            return;
-        }
+        // 🔥 broadcast pra todos
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(msg.toString())
+            }
+        })
+    })
+})
 
-        // =========================
-        // SITE → GAME
-        // =========================
-        if (ws.type === "site") {
-            wss.clients.forEach((client) => {
-                if (
-                    client.readyState === WebSocket.OPEN &&
-                    client.type === "game"
-                ) {
-                    client.send(JSON.stringify(data));
-                }
-            });
-        }
-
-        // =========================
-        // GAME → SITE (PLAYERS)
-        // =========================
-        if (ws.type === "game" && data.type === "players") {
-            wss.clients.forEach((client) => {
-                if (
-                    client.readyState === WebSocket.OPEN &&
-                    client.type === "site"
-                ) {
-                    client.send(JSON.stringify(data));
-                }
-            });
-        }
-    });
-
-    ws.on("close", () => {
-        ws.type = null;
-    });
-});
-
-server.listen(process.env.PORT || 8080, () => {
-    console.log("🚀 Server rodando");
-});
+server.listen(8080, () => {
+    console.log('🚀 servidor rodando')
+})
